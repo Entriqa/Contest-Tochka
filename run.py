@@ -85,7 +85,7 @@ def all_moves(hall: tuple[str, ...], rooms: tuple[tuple[str, ...], ...]) -> list
     return moves
 
 
-def dijkstra(start_state):
+def dijkstra(start_state: tuple[tuple[str, ...], tuple[tuple[str, ...], ...]]) -> int | None:
     pq = [(0, start_state)]
     best = {start_state: 0}
 
@@ -106,7 +106,7 @@ def dijkstra(start_state):
 
 def solve(lines: list[str]) -> int:
     state = parse_labyrinth(lines)
-    return dijkstra(state)
+    return dijkstra(state) or 0
 
 
 def main():
