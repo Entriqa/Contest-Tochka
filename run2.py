@@ -26,7 +26,7 @@ def dijkstra(graph: dict[str, list[str]], start: str) -> tuple[dict[str, str], s
                     if min_dist > dist[v]:
                         min_dist = dist[v]
                         min_gate = v
-                    if v < min_gate:
+                    if v < min_gate and dist[v] <= min_dist:
                         min_gate = v
             if min_dist < dist[v]:
                  return prev, min_gate
@@ -66,8 +66,6 @@ def solve(edges: list[tuple[str, str]]) -> list[str]:
 
     while not is_all_gates_isolated(vertex_neighbours):
         path, gate = dijkstra(vertex_neighbours, start_vertex)
-        if path is None:
-            break
         first_edge, last_edge = first_and_last_edges_of_path(path, start_vertex, gate)
         vertex_neighbours[last_edge[0]].remove(last_edge[1])
         vertex_neighbours[last_edge[1]].remove(last_edge[0])
