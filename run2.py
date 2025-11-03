@@ -66,6 +66,8 @@ def solve(edges: list[tuple[str, str]]) -> list[str]:
 
     while not is_all_gates_isolated(vertex_neighbours):
         path, gate = dijkstra(vertex_neighbours, start_vertex)
+        if not any(path.values()):
+            break
         first_edge, last_edge = first_and_last_edges_of_path(path, start_vertex, gate)
         vertex_neighbours[last_edge[0]].remove(last_edge[1])
         vertex_neighbours[last_edge[1]].remove(last_edge[0])
