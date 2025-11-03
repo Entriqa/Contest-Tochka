@@ -6,11 +6,13 @@ def is_lock(letter: str) -> bool:
     return 'A' <= letter <= 'Z'
 
 
-def dijkstra(graph: dict[str, list[str]], start: str) -> dict[str, str] | None:
+def dijkstra(graph: dict[str, list[str]], start: str) -> tuple[dict[str, str], str] | None:
     pq = [(0, start)]
     prev = {gate: ""  for gate in graph.keys()}
     dist = {gate: 1000  for gate in graph.keys()}
     dist[start] = 0
+    min_dist = 1000
+    min_gate = "Z"
 
     while pq:
         cost, knot = heappop(pq)
@@ -21,8 +23,14 @@ def dijkstra(graph: dict[str, list[str]], start: str) -> dict[str, str] | None:
                 prev[v] = knot
                 heappush(pq, (new_cost, v))
                 if is_lock(v):
-                    return prev
-    return None
+                    if min_dist > dist[v]:
+                        min_dist = dist[v]
+                        min_gate = v
+                    if v < min_gate:
+                        min_gate = v
+            if min_dist < dist[v]:
+                 return prev, min_gate
+    return prev, min_gate
 
 
 def parse_edges(edges: list[tuple[str, str]]) -> dict[str, list[str]]:
@@ -45,9 +53,9 @@ def is_all_gates_isolated(edges_neighbours: dict[str, list[str]]) -> bool:
     return all(not edges_neighbours[c] for c in edges_neighbours.keys() if is_lock(c))
 
 
-def first_and_last_edges_of_path(path: dict[str, str],  start_vertex) -> tuple[tuple[str, str], tuple[str, str]]:
+def first_and_last_edges_of_path(path: dict[str, str],  start_vertex: str, gate: str) -> tuple[tuple[str, str], tuple[str, str]]:
     first_edge = [(key, value) for key, value in path.items() if value == start_vertex][0]
-    last_edge = [(key, value) for key, value in path.items() if is_lock(key) and value][0]
+    last_edge = (gate, path[gate])
     return first_edge, last_edge
 
 
@@ -57,10 +65,10 @@ def solve(edges: list[tuple[str, str]]) -> list[str]:
     vertex_neighbours = parse_edges(edges)
 
     while not is_all_gates_isolated(vertex_neighbours):
-        path = dijkstra(vertex_neighbours, start_vertex)
+        path, gate = dijkstra(vertex_neighbours, start_vertex)
         if path is None:
             break
-        first_edge, last_edge = first_and_last_edges_of_path(path, start_vertex)
+        first_edge, last_edge = first_and_last_edges_of_path(path, start_vertex, gate)
         vertex_neighbours[last_edge[0]].remove(last_edge[1])
         vertex_neighbours[last_edge[1]].remove(last_edge[0])
         result.append(f"{last_edge[0]}-{last_edge[1]}")
