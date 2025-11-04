@@ -12,7 +12,7 @@ def dijkstra(graph: dict[str, list[str]], start: str) -> tuple[dict[str, str], s
     dist = {gate: 1000  for gate in graph.keys()}
     dist[start] = 0
     min_dist = 1000
-    min_gate = "Z"
+    min_gate = chr(ord('Z') + 1)
 
     while pq:
         cost, knot = heappop(pq)
