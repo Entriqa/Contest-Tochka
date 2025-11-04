@@ -26,7 +26,7 @@ def dijkstra(graph: dict[str, list[str]], start: str) -> tuple[dict[str, str], s
                     if min_dist > dist[v]:
                         min_dist = dist[v]
                         min_gate = v
-                    if v < min_gate:
+                    if v < min_gate and dist[v] == min_dist:
                         min_gate = v
             if min_dist < dist[v]:
                  return prev, min_gate
@@ -54,7 +54,8 @@ def is_all_gates_isolated(edges_neighbours: dict[str, list[str]]) -> bool:
 
 
 def first_and_last_edges_of_path(path: dict[str, str],  start_vertex: str, gate: str) -> tuple[tuple[str, str], tuple[str, str]]:
-    first_edge = [(key, value) for key, value in path.items() if value == start_vertex][0]
+    candidates = [(key, value) for key, value in path.items() if value == start_vertex]
+    first_edge = min(candidates, key=lambda kv: kv[0])
     last_edge = (gate, path[gate])
     return first_edge, last_edge
 
