@@ -26,7 +26,7 @@ def dijkstra(graph: dict[str, list[str]], start: str) -> tuple[dict[str, str], s
                     if min_dist > dist[v]:
                         min_dist = dist[v]
                         min_gate = v
-                    if v < min_gate and dist[v] <= min_dist:
+                    if v < min_gate:
                         min_gate = v
             if min_dist < dist[v]:
                  return prev, min_gate
