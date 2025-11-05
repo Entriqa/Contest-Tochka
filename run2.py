@@ -69,7 +69,7 @@ def get_all_gate_edges(graph: dict[str, list[str]]) -> list[tuple[str, str]]:
     return edges
 
 
-def solve(edges):
+def solve(edges: list[tuple[str, str]]) -> list[str]:
     graph = parse_edges(edges)
     virus_pos = "a"
     result = []
