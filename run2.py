@@ -1,80 +1,78 @@
 import sys
-from collections import deque
+from heapq import heappop, heappush
 
 
-def is_gate(node: str) -> bool:
-    return 'A' <= node <= 'Z'
+def is_lock(letter: str) -> bool:
+    return 'A' <= letter <= 'Z'
 
 
-def bfs_find_target_and_path(graph: dict[str, list[str]], start: str) -> tuple[str, list[str]]:
-    queue = deque([start])
-    prev = {start: None}
-    dist = {start: 0}
+def dijkstra(graph: dict[str, list[str]], start: str) -> tuple[dict[str, str], str] | None:
+    pq = [(0, start)]
+    prev = {gate: ""  for gate in graph.keys()}
+    dist = {gate: 1000  for gate in graph.keys()}
+    dist[start] = 0
+    min_dist = 1000
+    min_gate = chr(ord('Z') + 1)
 
-    target_gate = None
-    min_dist = float('inf')
-
-    while queue:
-        current = queue.popleft()
-
-        for neighbor in graph[current]:
-            if neighbor not in dist:
-                dist[neighbor] = dist[current] + 1
-                prev[neighbor] = current
-                queue.append(neighbor)
-
-                if is_gate(neighbor):
-                    if dist[neighbor] < min_dist:
-                        min_dist = dist[neighbor]
-                        target_gate = neighbor
-                    elif dist[neighbor] == min_dist and neighbor < target_gate:
-                        target_gate = neighbor
-
-    if target_gate is None:
-        return None, []
-
-    path = []
-    current = target_gate
-    while current is not None:
-        path.append(current)
-        current = prev[current]
-    path.reverse()
-
-    return target_gate, path
+    while pq:
+        cost, knot = heappop(pq)
+        for v in graph[knot]:
+            new_cost = cost + 1
+            if new_cost < dist[v]:
+                dist[v] = new_cost
+                prev[v] = knot
+                heappush(pq, (new_cost, v))
+                if is_lock(v):
+                    if min_dist > dist[v]:
+                        min_dist = dist[v]
+                        min_gate = v
+                    if v < min_gate:
+                        min_gate = v
+            if min_dist < dist[v]:
+                 return prev, min_gate
+    return prev, min_gate
 
 
 def parse_edges(edges: list[tuple[str, str]]) -> dict[str, list[str]]:
-    vertex_neighbours = {}
+    vertex_neighbours = dict()
     for u, v in edges:
-        if u not in vertex_neighbours:
+        if u not in vertex_neighbours.keys():
             vertex_neighbours[u] = []
-        if v not in vertex_neighbours:
+            vertex_neighbours[u].append(v)
+        else:
+            vertex_neighbours[u].append(v)
+        if v not in vertex_neighbours.keys():
             vertex_neighbours[v] = []
-        vertex_neighbours[u].append(v)
-        vertex_neighbours[v].append(u)
-
-    for node in vertex_neighbours:
-        vertex_neighbours[node].sort()
-
+            vertex_neighbours[v].append(u)
+        else:
+            vertex_neighbours[v].append(u)
     return vertex_neighbours
+
+
+def is_all_gates_isolated(edges_neighbours: dict[str, list[str]]) -> bool:
+    return all(not edges_neighbours[c] for c in edges_neighbours.keys() if is_lock(c))
+
+
+def first_and_last_edges_of_path(path: dict[str, str],  start_vertex: str, gate: str) -> tuple[tuple[str, str], tuple[str, str]]:
+    first_edge = [(key, value) for key, value in path.items() if value == start_vertex][0]
+    last_edge = (gate, path[gate])
+    return first_edge, last_edge
 
 
 def solve(edges: list[tuple[str, str]]) -> list[str]:
     result = []
-    virus_position = "a"
-    graph = parse_edges(edges)
-    target_gate, path_to_gate = bfs_find_target_and_path(graph, virus_position)
+    start_vertex = "a"
+    vertex_neighbours = parse_edges(edges)
 
-    while target_gate:
-        node = path_to_gate[-2]
-        result.append(f"{target_gate}-{node}")
-
-        graph[target_gate].remove(node)
-        graph[node].remove(target_gate)
-
-        target_gate, path_to_gate = bfs_find_target_and_path(graph, virus_position)
-        if target_gate:
-            virus_position = path_to_gate[1]
+    while not is_all_gates_isolated(vertex_neighbours):
+        path, gate = dijkstra(vertex_neighbours, start_vertex)
+        if not any(path.values()):
+            break
+        first_edge, last_edge = first_and_last_edges_of_path(path, start_vertex, gate)
+        vertex_neighbours[last_edge[0]].remove(last_edge[1])
+        vertex_neighbours[last_edge[1]].remove(last_edge[0])
+        result.append(f"{last_edge[0]}-{last_edge[1]}")
+        start_vertex = first_edge[0]
 
     return result
 
